@@ -1,0 +1,117 @@
+import React, { useState } from 'react';
+import { GeneratedCode } from '../types';
+import { Copy, Terminal, Cpu, FileText, Check } from 'lucide-react';
+
+interface CodeViewerProps {
+  code: GeneratedCode | null;
+  loading: boolean;
+  onGenerate: (notes: string) => void;
+}
+
+export const CodeViewer: React.FC<CodeViewerProps> = ({ code, loading, onGenerate }) => {
+  const [activeTab, setActiveTab] = useState<'python' | 'arduino' | 'docs'>('python');
+  const [userNotes, setUserNotes] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (!code) return;
+    const text = activeTab === 'python' ? code.python 
+               : activeTab === 'arduino' ? code.arduino 
+               : code.explanation;
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (!code && !loading) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center">
+        <Terminal size={48} className="mb-4 text-slate-600" />
+        <h3 className="text-xl font-bold text-white mb-2">Generate System Firmware</h3>
+        <p className="max-w-md mb-6 text-sm">
+          Use the AI Architect to generate custom Python (Computer Vision) and C++ (Arduino) code tailored to your arm's configuration.
+        </p>
+        <textarea 
+          value={userNotes}
+          onChange={(e) => setUserNotes(e.target.value)}
+          placeholder="Add custom notes (e.g., 'Use Pins 9,10,11', 'Add a buzzer for safety')"
+          className="w-full max-w-md bg-slate-900 border border-slate-700 rounded p-3 text-sm text-white mb-4 h-24 focus:border-sky-500 outline-none"
+        />
+        <button 
+          onClick={() => onGenerate(userNotes)}
+          className="bg-sky-600 hover:bg-sky-500 text-white px-6 py-2 rounded font-medium flex items-center gap-2"
+        >
+          <Cpu size={16} />
+          Generate Code
+        </button>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center text-sky-400">
+        <div className="w-12 h-12 border-4 border-sky-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="animate-pulse">Architecting Solution...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col bg-slate-900 rounded-lg border border-slate-700 overflow-hidden">
+      {/* Tab Header */}
+      <div className="flex border-b border-slate-700 bg-slate-800">
+        <button 
+          onClick={() => setActiveTab('python')}
+          className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-slate-700 transition-colors ${activeTab === 'python' ? 'text-sky-400 border-b-2 border-sky-400' : 'text-slate-400'}`}
+        >
+          <Terminal size={14} /> Python (Host)
+        </button>
+        <button 
+          onClick={() => setActiveTab('arduino')}
+          className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-slate-700 transition-colors ${activeTab === 'arduino' ? 'text-sky-400 border-b-2 border-sky-400' : 'text-slate-400'}`}
+        >
+          <Cpu size={14} /> Arduino (Driver)
+        </button>
+        <button 
+          onClick={() => setActiveTab('docs')}
+          className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-slate-700 transition-colors ${activeTab === 'docs' ? 'text-sky-400 border-b-2 border-sky-400' : 'text-slate-400'}`}
+        >
+          <FileText size={14} /> Docs
+        </button>
+      </div>
+
+      {/* Code Area */}
+      <div className="flex-1 relative overflow-hidden group">
+        <button 
+          onClick={handleCopy}
+          className="absolute top-4 right-4 z-10 bg-slate-700 hover:bg-slate-600 text-white p-2 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+          title="Copy to clipboard"
+        >
+          {copied ? <Check size={16} className="text-green-400"/> : <Copy size={16} />}
+        </button>
+        
+        <pre className="h-full overflow-auto p-4 text-xs font-mono leading-relaxed text-slate-300">
+          {activeTab === 'python' && code?.python}
+          {activeTab === 'arduino' && code?.arduino}
+          {activeTab === 'docs' && (
+            <div className="prose prose-invert prose-sm max-w-none font-sans">
+              {/* Simple Markdown rendering fallback since we don't have a markdown lib */}
+              {code?.explanation.split('\n').map((line, i) => <p key={i} className="mb-2">{line}</p>)}
+            </div>
+          )}
+        </pre>
+      </div>
+      
+      <div className="p-3 bg-slate-800 border-t border-slate-700 flex justify-between items-center">
+        <span className="text-xs text-slate-500">Generated by Gemini 2.0 Flash</span>
+        <button 
+           onClick={() => onGenerate(userNotes)}
+           className="text-xs text-sky-400 hover:text-sky-300 hover:underline"
+        >
+          Regenerate
+        </button>
+      </div>
+    </div>
+  );
+};

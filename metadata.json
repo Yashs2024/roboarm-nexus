@@ -1,0 +1,7 @@
+{
+  "name": "RoboArm Nexus",
+  "description": "An industrial-grade robotic arm control suite featuring real-time Inverse Kinematics simulation and AI-powered firmware generation for Python and Arduino.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
