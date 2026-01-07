@@ -318,38 +318,19 @@ const App: React.FC = () => {
           
           {activeTab === Tab.SIMULATION ? (
             <div 
-              className="flex-1 bg-black rounded-xl border border-slate-800 overflow-hidden relative flex flex-col group select-none"
+              className="flex-1 bg-slate-900 rounded-xl border border-slate-800 overflow-hidden relative flex flex-col group select-none shadow-inner"
               onMouseMove={handleMouseMove}
               onMouseDown={handleMouseDown}
               onMouseUp={handleMouseUp}
             >
-              {/* Webcam Feed & Canvas Overlay */}
-              <div className="absolute inset-0 z-0 flex items-center justify-center bg-slate-900">
-                {!isVisionReady && (
-                   <div className="flex flex-col items-center gap-2 text-slate-500 animate-pulse">
-                      <ScanEye size={32} />
-                      <span className="text-xs">Initializing Neural Engine...</span>
-                   </div>
-                )}
-                <video 
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="absolute inset-0 w-full h-full object-cover opacity-40 grayscale-[20%]"
-                />
-                <canvas 
-                   ref={canvasRef}
-                   width={640}
-                   height={480}
-                   className="absolute inset-0 w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/10 to-slate-900/10 pointer-events-none" />
+              
+              {/* Simulation Layer - Fills the main view */}
+              <div className={`flex-1 relative z-10 ${gesture === HandGesture.CLOSED_FIST ? 'cursor-not-allowed' : 'cursor-crosshair'}`}>
+                <ArmSimulation angles={angles} config={config} target={target} balls={balls} />
               </div>
 
-              {/* Enhanced Overlay UI */}
+              {/* Enhanced Overlay UI (Top Right) */}
               <div className="absolute top-4 right-4 z-20 flex flex-col gap-3 min-w-[220px]">
-                
                 {/* Status Card */}
                 <div className="bg-slate-900/90 backdrop-blur p-4 rounded-xl border border-slate-700 shadow-2xl">
                    <div className="flex items-center justify-between mb-3">
@@ -383,13 +364,37 @@ const App: React.FC = () => {
                       </div>
                    </div>
                 </div>
-
               </div>
 
-              {/* Simulation Layer */}
-              <div className={`flex-1 relative z-10 ${gesture === HandGesture.CLOSED_FIST ? 'cursor-not-allowed' : 'cursor-crosshair'}`}>
-                <ArmSimulation angles={angles} config={config} target={target} balls={balls} />
+              {/* Webcam Feed - Floating in Bottom Right */}
+              <div className="absolute bottom-4 right-4 z-30 w-64 h-48 bg-black rounded-lg border border-slate-700 shadow-2xl overflow-hidden flex items-center justify-center transition-all hover:border-slate-500">
+                {!isVisionReady && (
+                   <div className="flex flex-col items-center gap-2 text-slate-500 animate-pulse z-40">
+                      <ScanEye size={24} />
+                      <span className="text-[10px]">Initialize...</span>
+                   </div>
+                )}
+                
+                {/* Source Label */}
+                <div className="absolute top-2 left-2 z-40 bg-black/50 backdrop-blur px-1.5 py-0.5 rounded text-[9px] font-bold text-white/50 border border-white/10">
+                  LIVE FEED
+                </div>
+
+                <video 
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="absolute inset-0 w-full h-full object-cover opacity-90"
+                />
+                <canvas 
+                   ref={canvasRef}
+                   width={640}
+                   height={480}
+                   className="absolute inset-0 w-full h-full object-cover"
+                />
               </div>
+
             </div>
           ) : (
             <div className="flex-1">
